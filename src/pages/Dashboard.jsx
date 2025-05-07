@@ -17,9 +17,11 @@ export default function Dashboard() {
     if (loading || !user?._id) return; // wait for auth
 
     (async () => {
+      const baseURL = import.meta.env.VITE_API_BASE_URL;
+      console.log("URL in dashboard", baseURL);
       try {
         const { projects = [] } = await fetcher(
-          `/api/projects?author=${user._id}`
+          `${baseURL}/api/projects?author=${user._id}`
         );
         setProjects(projects);
         setError("");
@@ -35,7 +37,9 @@ export default function Dashboard() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this project?")) return;
     try {
-      await fetcher(`/api/projects/${id}`, { method: "DELETE" });
+      const baseURL = import.meta.env.VITE_API_BASE_URL;
+
+      await fetcher(`${baseURL}/api/projects/${id}`, { method: "DELETE" });
       setProjects((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
       alert(err.message);

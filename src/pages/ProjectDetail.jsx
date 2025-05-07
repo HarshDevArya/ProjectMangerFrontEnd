@@ -11,11 +11,11 @@ export default function ProjectDetail() {
   const [project, setProject] = useState(null);
   const [commentText, setCommentText] = useState("");
   const [error, setError] = useState("");
-
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
   useEffect(() => {
     (async () => {
       try {
-        const data = await fetcher(`/api/projects/${id}`);
+        const data = await fetcher(`${baseURL}/api/projects/${id}`);
         setProject(data);
       } catch (err) {
         setError(err.message);
@@ -26,11 +26,14 @@ export default function ProjectDetail() {
   const addComment = async (e) => {
     e.preventDefault();
     try {
-      const newComment = await fetcher(`/api/projects/${id}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: commentText }),
-      });
+      const newComment = await fetcher(
+        `${baseURL}/api/projects/${id}/comments`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: commentText }),
+        }
+      );
       setProject((prev) => ({
         ...prev,
         comments: [newComment, ...(prev.comments || [])],
@@ -133,9 +136,12 @@ export default function ProjectDetail() {
                   className="btn btn-sm btn-link text-danger float-end"
                   onClick={async () => {
                     try {
-                      await fetcher(`/api/projects/${id}/comments/${c._id}`, {
-                        method: "DELETE",
-                      });
+                      await fetcher(
+                        `${baseURL}/api/projects/${id}/comments/${c._id}`,
+                        {
+                          method: "DELETE",
+                        }
+                      );
                       setProject((prev) => ({
                         ...prev,
                         comments: prev.comments.filter((x) => x._id !== c._id),

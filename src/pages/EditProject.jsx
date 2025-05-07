@@ -13,12 +13,12 @@ export default function EditProject() {
     links: "",
   });
   const [error, setError] = useState("");
-
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
   /* load existing */
   useEffect(() => {
     (async () => {
       try {
-        const p = await fetcher(`/api/projects/${id}`);
+        const p = await fetcher(`${baseURL}/api/projects/${id}`);
         setForm({
           title: p.title,
           description: p.description,
@@ -36,7 +36,7 @@ export default function EditProject() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await fetcher(`/api/projects/${id}`, {
+      await fetcher(`${baseURL}/api/projects/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

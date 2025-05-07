@@ -12,12 +12,14 @@ export default function Search() {
   const fetcher = useFetch();
   const [data, setData] = useState({ users: [], projects: [] });
   const [error, setError] = useState("");
-
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
   useEffect(() => {
     (async () => {
       try {
         const res = await fetcher(
-          `/api/search?q=${encodeURIComponent(query)}&page=${pageParam}`
+          `${baseURL}/api/search?q=${encodeURIComponent(
+            query
+          )}&page=${pageParam}`
         );
         setData(res);
         setError("");

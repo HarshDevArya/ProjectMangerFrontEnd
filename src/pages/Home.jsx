@@ -16,7 +16,9 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetcher(`/api/projects?page=${page}`);
+        const baseURL = import.meta.env.VITE_API_BASE_URL;
+        console.log("URL in Home", baseURL);
+        const res = await fetcher(`${baseURL}/api/projects?page=${page}`);
         setData(res);
         setError("");
       } catch (err) {
