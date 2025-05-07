@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
+  console.log("URL", baseURL);
   /* ---------- get current user on mount ---------- */
   useEffect(() => {
     (async () => {
