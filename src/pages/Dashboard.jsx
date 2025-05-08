@@ -3,62 +3,90 @@ import { Link } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
 import { useAuth } from "../context/AuthContext";
 import ProjectCard from "../components/ProjectCard/ProjectCard";
+import Pagination from "../components/Pagination/Pagination";
+import swal from "sweetalert";
+import { PlusCircle, Edit3, Trash2 } from "lucide-react";
 
 export default function Dashboard() {
-  const { user, loading } = useAuth(); // loading = true until /auth/me resolves
+  const { user, loading } = useAuth();
   const fetcher = useFetch();
 
-  const [projects, setProjects] = useState([]); // always an array
+  const [page, setPage] = useState(1);
+  const [data, setData] = useState({ projects: [], totalPages: 1 });
   const [error, setError] = useState("");
-  const [fetched, setFetched] = useState(false); // indicates request finished
+  const [fetched, setFetched] = useState(false);
 
-  /* fetch only when user._id is available */
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
+  const limit = 2; // page size for dashboard
+
+  /* ---------- fetch on page or user change ---------- */
   useEffect(() => {
-    if (loading || !user?._id) return; // wait for auth
+    if (loading || !user?._id) return;
 
     (async () => {
-      const baseURL = import.meta.env.VITE_API_BASE_URL;
-      console.log("URL in dashboard", baseURL);
       try {
-        const { projects = [] } = await fetcher(
-          `${baseURL}/api/projects?author=${user._id}`
+        const res = await fetcher(
+          `${baseURL}/api/projects?author=${user._id}&page=${page}&limit=${limit}`
         );
-        setProjects(projects);
+        setData(res);
         setError("");
       } catch (err) {
         setError(err.message);
-        setProjects([]); // keep it an array
+        setData({ projects: [], totalPages: 1 });
       } finally {
         setFetched(true);
       }
     })();
-  }, [loading, user?._id]);
+  }, [loading, user?._id, page]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this project?")) return;
-    try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL;
+  /* ---------- delete ---------- */
+  const handleDelete = (id) => {
+    swal({
+      title: "Delete this project?",
+      text: "Once deleted, you won’t be able to recover it!",
+      icon: "warning",
+      buttons: ["Cancel", "Delete"],
+      dangerMode: true,
+    }).then(async (willDelete) => {
+      if (!willDelete) return;
 
-      await fetcher(`${baseURL}/api/projects/${id}`, { method: "DELETE" });
-      setProjects((prev) => prev.filter((p) => p._id !== id));
-    } catch (err) {
-      alert(err.message);
-    }
+      try {
+        await fetcher(`${baseURL}/api/projects/${id}`, { method: "DELETE" });
+        // refetch current page (could end up empty; adjust page down if needed)
+        const res = await fetcher(
+          `${baseURL}/api/projects?author=${user._id}&page=${page}&limit=${limit}`
+        );
+        // if page is now empty and not first, step back a page
+        if (res.projects.length === 0 && page > 1) setPage(page - 1);
+        else setData(res);
+        swal("Deleted!", "Your project has been removed.", "success");
+      } catch (err) {
+        swal("Error", err.message, "error");
+      }
+    });
   };
 
+  /* ---------- UI ---------- */
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center my-4">
         <h1>Your Projects</h1>
-        <Link to="/projects/new" className="btn btn-success">
-          + New Project
+        <Link
+          to="/projects/new"
+          className="btn btn-success d-flex align-items-center">
+          <PlusCircle size={18} className="me-1" /> New Project
         </Link>
       </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {/* empty‑state shown only after first fetch */}
-      {fetched && projects.length === 0 && !error && (
+      {/* {fetched && data.projects.length === 0 && !error && (
+        <p>
+          No projects yet. <Link to="/projects/new">Create one</Link>.
+        </p>
+      )} */}
+
+      {fetched && data.projects.length === 0 && !error && (
         <div className="text-center py-5 my-4">
           <div className="mb-4">
             <svg
@@ -95,27 +123,40 @@ export default function Dashboard() {
         </div>
       )}
 
-      {projects.length > 0 && (
-        <div className="row g-4">
-          {projects.map((p) => (
-            <div key={p._id} className="col-md-4">
-              <ProjectCard project={p}>
-                <div className="d-flex gap-2 mt-2">
-                  <Link
-                    to={`/projects/${p._id}/edit`}
-                    className="btn btn-sm btn-outline-primary">
-                    Edit
-                  </Link>
-                  <button
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => handleDelete(p._id)}>
-                    Delete
-                  </button>
-                </div>
-              </ProjectCard>
-            </div>
-          ))}
-        </div>
+      {data.projects.length > 0 && (
+        <>
+          <div className="row g-4">
+            {data.projects.map((p) => (
+              <div key={p._id} className="col-md-4">
+                <ProjectCard project={p}>
+                  <div className="d-flex gap-2 align-items-center">
+                    <button
+                      onClick={() => handleDelete(p._id)}
+                      className="btn btn-link text-danger p-0"
+                      title="Delete">
+                      <Trash2 size={16} />
+                    </button>
+                    <Link
+                      to={`/projects/${p._id}/edit`}
+                      className="btn btn-link text-primary p-0"
+                      title="Edit">
+                      <Edit3 size={16} />
+                    </Link>
+                  </div>
+                </ProjectCard>
+              </div>
+            ))}
+          </div>
+
+          {/* ---------- Pagination ---------- */}
+          {data.totalPages > 1 && (
+            <Pagination
+              current={page}
+              total={data.totalPages}
+              onChange={setPage}
+            />
+          )}
+        </>
       )}
     </div>
   );

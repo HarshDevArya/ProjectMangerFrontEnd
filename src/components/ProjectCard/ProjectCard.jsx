@@ -2,46 +2,75 @@
 import { Link } from "react-router-dom";
 import styles from "./ProjectCard.module.css"; // optional CSS‑module overrides
 
+import {
+  PlusCircle,
+  FolderPlus,
+  Edit3,
+  Trash2,
+  AlertCircle,
+  Calendar,
+  ChevronRight,
+} from "lucide-react";
+
 export default function ProjectCard({ project, children }) {
   return (
-    <div className={`card h-100 shadow-sm ${styles.card || ""}`}>
-      {/* Cover image */}
-      {project.coverUrl && (
+    <div className="card h-100 rounded overflow-hidden shadow-sm hover-shadow transition-shadow">
+      {project.coverUrl ? (
         <img
           src={project.coverUrl}
-          alt="cover"
+          alt={project.title}
           className="card-img-top"
-          style={{ objectFit: "cover", height: 180 }}
+          style={{ height: "12rem", objectFit: "cover" }}
         />
+      ) : (
+        <div
+          className="card-img-top d-flex align-items-center justify-content-center"
+          style={{
+            height: "12rem",
+            background: "linear-gradient(to right, #4f46e5, #9333ea)",
+          }}>
+          <h3 className="text-white fw-bold mb-0">{project.title.charAt(0)}</h3>
+        </div>
       )}
 
-      <div className="card-body d-flex flex-column">
-        {/* Title */}
-        <h5 className="card-title mb-1">{project.title}</h5>
-
-        {/* Author */}
-        {project.author && (
-          <p className="card-subtitle text-muted mb-2">
-            by {project.author.name}
-          </p>
-        )}
-
-        {/* Description snippet */}
-        <p className="card-text flex-grow-1">
+      <div className="card-body p-4">
+        <h5 className="card-title text-truncate mb-2">{project.title}</h5>
+        <p className="card-text text-muted small mb-3">
           {project.description.length > 100
             ? project.description.slice(0, 100) + "…"
             : project.description}
         </p>
 
-        {/* View button */}
-        <Link
-          to={`/projects/${project._id}`}
-          className="btn btn-outline-primary btn-sm mt-auto">
-          View details
-        </Link>
+        {/* <div className="d-flex align-items-center text-muted small mb-3">
+            <Calendar size={14} className="me-1" />
+            <span>{formattedDate}</span>
+          </div> */}
 
-        {/* Extra slot (e.g., Edit / Delete in Dashboard) */}
-        {children}
+        {/* {tags.length > 0 && (
+            <div className="mb-3">
+              {tags.slice(0, 3).map((tag, i) => (
+                <span key={i} className="badge bg-light text-secondary me-1">
+                  {tag}
+                </span>
+              ))}
+              {tags.length > 3 && (
+                <span className="small text-secondary">
+                  +{tags.length - 3} more
+                </span>
+              )}
+            </div>
+          )} */}
+
+        <div className="d-flex justify-content-between align-items-center border-top pt-3">
+          <div>{children}</div>
+
+          <Link
+            to={`/projects/${project._id}`}
+            className="small text-primary text-decoration-none d-flex align-items-center">
+            View details
+            <ChevronRight size={16} className="ms-1" />
+          </Link>
+        </div>
       </div>
     </div>
   );

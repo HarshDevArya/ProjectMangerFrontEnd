@@ -10,7 +10,7 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [data, setData] = useState({ projects: [], totalPages: 1 });
   const [error, setError] = useState("");
-
+  const limit = 2;
   //   console.log("data in Home", data?.projects?.length ?? 0);
 
   useEffect(() => {
@@ -18,7 +18,10 @@ export default function Home() {
       try {
         const baseURL = import.meta.env.VITE_API_BASE_URL;
         console.log("URL in Home", baseURL);
-        const res = await fetcher(`${baseURL}/api/projects?page=${page}`);
+        const res = await fetcher(
+          `${baseURL}/api/projects?page=${page}&limit=${limit}`
+        );
+        console.log("data in Home Page", res);
         setData(res);
         setError("");
       } catch (err) {
@@ -91,7 +94,7 @@ export default function Home() {
             <div className="d-flex flex-column flex-md-row gap-3 align-items-md-center justify-content-between">
               {/* ────────────────  Projects grid  ──────────────── */}
               {data.projects?.length ? (
-                <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+                <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                   {data.projects.map((p, idx) => (
                     <div className="col" key={idx}>
                       <ProjectCard project={p} />
@@ -117,16 +120,15 @@ export default function Home() {
                   </div>
                 </div>
               ) : null}
-
-              {/* ────────────────  Pagination  ──────────────── */}
-              {data.totalPages > 1 && (
-                <Pagination
-                  current={page}
-                  total={data.totalPages}
-                  onChange={(n) => setPage(n)}
-                />
-              )}
             </div>
+            {/* ────────────────  Pagination  ──────────────── */}
+            {data.totalPages > 1 && (
+              <Pagination
+                current={page}
+                total={data.totalPages}
+                onChange={(n) => setPage(n)}
+              />
+            )}
           </div>
         </div>
       </div>

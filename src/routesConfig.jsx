@@ -6,6 +6,8 @@ import NewProject from "./pages/NewProject";
 import EditProject from "./pages/EditProject";
 import ProjectDetail from "./pages/ProjectDetail";
 import Search from "./pages/Search";
+import UserProfile from "./pages/UserProfile";
+import EditProfile from "./pages/EditProfile";
 
 import RequireAuth from "./components/RequireAuth";
 
@@ -40,4 +42,13 @@ export const routesConfig = [
     ),
   },
   { path: "/projects/:id", element: <ProjectDetail /> },
+  { path: "/users/:id", element: <UserProfile /> },
+  {
+    path: "/profile",
+    element: (
+      <RequireAuth>
+        <EditProfile />
+      </RequireAuth>
+    ),
+  },
 ];
